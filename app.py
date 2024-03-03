@@ -75,9 +75,6 @@ def cycle_channel():
 
 @app.route('/channel/<int:number>', methods=['PUT'])
 
-# TODO: Remove the number arg. Setting it now because I don't know where else to put the action.
-@app.route('/cyclechannels/<int:number>', methods=['PUT'])
-
 @app.route('/face/<int:number>', methods=['PUT'])
 @app.route('/visualizer/<int:number>', methods=['PUT'])
 @app.route('/clock/<int:number>', methods=['PUT'])
