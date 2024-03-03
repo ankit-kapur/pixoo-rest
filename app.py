@@ -60,6 +60,8 @@ brightness_preset_pos = 0
 brightness_presets = [10, 50, 100]
 @app.route('/cyclebrightness', methods=['POST'])
 def cycle_brightness():
+    global brightness_preset_pos
+    global brightness_presets
     brightness_preset_pos = (brightness_preset_pos + 1) % len(brightness_presets)
     pixoo.set_brightness(brightness_presets[brightness_preset_pos])
 
