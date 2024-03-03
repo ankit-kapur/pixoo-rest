@@ -68,10 +68,11 @@ def brightness(percentage):
 
 @swag_from('swag/set/generic_number.yml')
 def generic_set_number(number):
+    global current_channel
     if request.path.startswith('/channel/'):
         pixoo.set_channel(Channel(number))
     elif request.path.startswith('/cyclechannels/'):
-        current_channel = (current_channel + 1) % 3
+        current_channel = (current_channel + 1) % 4
         pixoo.set_channel(Channel(current_channel))
     elif request.path.startswith('/face/'):
         pixoo.set_face(number)
