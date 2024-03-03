@@ -71,7 +71,7 @@ def generic_set_number(number):
     if request.path.startswith('/channel/'):
         pixoo.set_channel(Channel(number))
     elif request.path.startswith('/cyclechannels/'):
-        current_channel = (current_channel + 1) % 4
+        current_channel = (current_channel + 1) % 3
         pixoo.set_channel(Channel(current_channel))
     elif request.path.startswith('/face/'):
         pixoo.set_face(number)
