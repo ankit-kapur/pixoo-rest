@@ -64,11 +64,14 @@ def cycle_brightness():
     global brightness_presets
     brightness_preset_pos = (brightness_preset_pos + 1) % len(brightness_presets)
     pixoo.set_brightness(brightness_presets[brightness_preset_pos])
+    return 'OK'
 
 @app.route('/cyclechannel', methods=['POST'])
 def cycle_channel():
+    global current_channel
     current_channel = (current_channel + 1) % 4
     pixoo.set_channel(Channel(current_channel))
+    return 'OK'
 
 @app.route('/channel/<int:number>', methods=['PUT'])
 
