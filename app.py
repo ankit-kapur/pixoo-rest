@@ -30,6 +30,8 @@ pixoo = Pixoo(
     pixoo_debug
 )
 
+current_channel = 0
+
 app = Flask(__name__)
 app.config['SWAGGER'] = _helpers.get_swagger_config()
 
@@ -56,13 +58,21 @@ def brightness(percentage):
 
 
 @app.route('/channel/<int:number>', methods=['PUT'])
+
+# TODO: Remove the number arg. Setting it now because I don't know where else to put the action.
+@app.route('/cyclechannels/<int:number>', methods=['PUT'])
+
 @app.route('/face/<int:number>', methods=['PUT'])
 @app.route('/visualizer/<int:number>', methods=['PUT'])
 @app.route('/clock/<int:number>', methods=['PUT'])
+
 @swag_from('swag/set/generic_number.yml')
 def generic_set_number(number):
     if request.path.startswith('/channel/'):
         pixoo.set_channel(Channel(number))
+    elif request.path.startswith('/cyclechannels/'):
+        current_channel = (current_channel + 1) % 4
+        pixoo.set_channel(Channel(current_channel))
     elif request.path.startswith('/face/'):
         pixoo.set_face(number)
     elif request.path.startswith('/visualizer/'):
