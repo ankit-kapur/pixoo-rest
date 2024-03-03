@@ -58,12 +58,12 @@ def brightness(percentage):
 
 brightness_preset_pos = 0
 brightness_presets = [10, 50, 100]
-@app.route('/cyclebrightness', methods=['PUT'])
+@app.route('/cyclebrightness', methods=['POST'])
 def cycle_brightness():
     brightness_preset_pos = (brightness_preset_pos + 1) % len(brightness_presets)
     pixoo.set_brightness(brightness_presets[brightness_preset_pos])
 
-@app.route('/cyclechannel', methods=['PUT'])
+@app.route('/cyclechannel', methods=['POST'])
 def cycle_channel():
     current_channel = (current_channel + 1) % 4
     pixoo.set_channel(Channel(current_channel))
