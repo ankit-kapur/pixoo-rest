@@ -3,7 +3,7 @@ parameters:
     description: The text to display.
     in: formData
     type: string
-    default: Hello, this is a whole sentence. Should truncate with ellipsis.
+    default: Hello, this is a whole sentence that should get paginated, and last line of non-last pages should end with ellipsis and first line of non-first pages should begin with ellipsis. And words should be on the same line unless a word is too big for a line.
     required: true
   # - $ref: '#/definitions/form_param_x'
   # - $ref: '#/definitions/form_param_y'

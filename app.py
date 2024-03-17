@@ -73,64 +73,120 @@ def cycle_channel():
     pixoo.set_channel(Channel(current_channel))
     return 'OK'
 
-line_height = 10
-left_margin = 1
-max_lines = 64 / line_height
+# Constants
+screen_width = 64 - 1
+screen_height = 64 - 1
+
+# Preferences # TODO: Some can be request parameters.
+slow_load = True
+page_pause_seconds = 2
 text_color = [255, 255, 255] # white
+line_height = 6
+character_width = 2
+character_spacing = 1
+left_margin = 1
+top_margin = 1
+
+# Derived values
+max_lines_per_page = int(screen_height / line_height)
+space_per_char = character_width + 2 * character_spacing
+max_chars_per_line = int(screen_width / space_per_char) - 1 # buffer
+
 @app.route('/sentence', methods=['POST'])
 @swag_from('swag/ankit/sentence.yml')
 def sentence():
-    print("\nCleaning the screen.")
-    # TODO Wipe screen
-    pixoo.fill_rgb(110,0,0)
-    pixoo.push() # not sure if needed. 
+    # Make lines.
+    print("Splitting into lines.")
+    lines = split_into_lines(request.form.get('sentence'))
+    print("lines = " + str(lines))
+    
+    # Pages
+    pages = make_pages(lines, max_lines_per_page)
 
-    # TODO Break sentence into lines
-    print("\nSplitting into lines.")
-    wholeText = request.form.get('sentence')
-    lines = split_into_lines(wholeText)
-    print("\nlines = " + str(lines))
+    page_number = 0
+    for page_of_lines in pages:
+        line_number = 0
 
-    line_number = 0
-    print("\nDrawing lines.")
-    for line_text in lines:
-        print("\n\tdrawing line #" + str(line_number))
-        pixoo.draw_text_at_location_rgb(
-            line_text,
-            int(left_margin),
-            int(line_number * line_height), # Take spacing into account too.
-            int(text_color[0]),
-            int(text_color[1]),
-            int(text_color[2])
-        )
+        print("Wiping the screen.")
+        pixoo.fill_rgb(0,0,0)
 
-        line_number += 1
+        print("Drawing page #" + str(page_number) + ". Max lines = " + str(max_lines_per_page))
+        for line_of_words in page_of_lines:
+            # Edge case: Last line, and there's more pages.
+            if line_number == max_lines_per_page and page_number < len(pages):
+                line_of_words[-1] = "..."
+            
+            # Text
+            line_text = ""
+            for word in line_of_words:
+                line_text += word + " "
+
+            # Pos
+            x = left_margin
+            y = top_margin + line_number * line_height
+
+            print("\tdrawing line #" + str(line_number) + ". text = " + line_text)
+            pixoo.draw_text_at_location_rgb(
+                line_text,
+                int(x), int(y),
+                int(text_color[0]), int(text_color[1]), int(text_color[2]))
+
+            line_number += 1
+            if slow_load:
+                pixoo.push()
+
+        # TODO: sleep then draw next page.
+        time.sleep(page_pause_seconds)
         pixoo.push()
-
+        page_number += 1
     return 'OK'
 
-def split_into_lines(wholeText):
-
-    # TODO Implement
-    print("wholeText = " + wholeText)
-    
+def split_into_lines(sentence):
+    print("whole sentence = " + sentence)
+    # init
     lines = []
-
     start = 0
-    end = 64
+    end = 0
 
-    while (start < len(wholeText)):
-        cutOff = end if end < len(wholeText) else len(wholeText)
+    # calc
+    words = sentence.split()
 
-        line = wholeText[start:cutOff]
-        lines.append(line)
-        print("\t\t start = " + str(start) + ", end = " + str(end) + ", cutOff = " + str(cutOff))
-        print("\t\t line = " + line)
+    # iteration vars
+    word_index = 0
+    remaining_pixels_in_line = 64
 
-        start = end
-        end += 64
+    # greedy approach. 
+    while (word_index < len(words)):
+        current_word = words[word_index]
+
+        # Edge-case: Too long a word should get hyphenated onto next line
+        if (len(current_word) > max_chars_per_line):
+            # TODO ---- implement
+            line = "hyphenate it if even 1 word won't fit on this line"
+
+        # keep adding words until the line is full.
+        remaining_chars = max_chars_per_line
+        words_in_line = []
+
+        while (remaining_chars > 0 and len(current_word) < remaining_chars):
+            words_in_line.append(current_word)
+            word_index += 1
+            remaining_chars -= len(current_word)
+
+            if (word_index == len(words)):
+                break
+            current_word = words[word_index]
+
+        if words_in_line:
+            lines.append(words_in_line)
+            print("\t line = " + str(words_in_line))
 
     return lines
+
+# Utils
+def make_pages(lines, max_lines_per_page):
+    max_lines_per_page = max(1, max_lines_per_page)
+    return (lines[i:i+max_lines_per_page] for i in range(0, len(lines), max_lines_per_page))
 
 # ------------------------------ Pre-defined APIs
 
