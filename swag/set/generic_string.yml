@@ -1,0 +1,14 @@
+parameters:
+  - name: string
+    description: Some text.
+    in: path
+    type: string
+    required: true
+    default: ''
+
+responses:
+  '200':
+    description: OK
+
+tags:
+  - ankit

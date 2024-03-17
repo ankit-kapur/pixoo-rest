@@ -31,6 +31,10 @@ def get_additional_swagger_template():
     return {
         'tags': [
             {
+                'name': 'ankit',
+                'description': 'built on top of the default APIs'
+            },
+            {
                 'name': 'draw',
                 'description': 'draw lines, pixels, rectangles, etc. on your Pixoo'
             },

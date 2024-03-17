@@ -73,8 +73,68 @@ def cycle_channel():
     pixoo.set_channel(Channel(current_channel))
     return 'OK'
 
-@app.route('/channel/<int:number>', methods=['PUT'])
+line_height = 10
+left_margin = 1
+max_lines = 64 / line_height
+text_color = [255, 255, 255] # white
+@app.route('/sentence', methods=['POST'])
+@swag_from('swag/ankit/sentence.yml')
+def sentence():
+    print("\nCleaning the screen.")
+    # TODO Wipe screen
+    pixoo.fill_rgb(110,0,0)
+    pixoo.push() # not sure if needed. 
 
+    # TODO Break sentence into lines
+    print("\nSplitting into lines.")
+    wholeText = request.form.get('sentence')
+    lines = split_into_lines(wholeText)
+    print("\nlines = " + str(lines))
+
+    line_number = 0
+    print("\nDrawing lines.")
+    for line_text in lines:
+        print("\n\tdrawing line #" + str(line_number))
+        pixoo.draw_text_at_location_rgb(
+            line_text,
+            int(left_margin),
+            int(line_number * line_height), # Take spacing into account too.
+            int(text_color[0]),
+            int(text_color[1]),
+            int(text_color[2])
+        )
+
+        line_number += 1
+        pixoo.push()
+
+    return 'OK'
+
+def split_into_lines(wholeText):
+
+    # TODO Implement
+    print("wholeText = " + wholeText)
+    
+    lines = []
+
+    start = 0
+    end = 64
+
+    while (start < len(wholeText)):
+        cutOff = end if end < len(wholeText) else len(wholeText)
+
+        line = wholeText[start:cutOff]
+        lines.append(line)
+        print("\t\t start = " + str(start) + ", end = " + str(end) + ", cutOff = " + str(cutOff))
+        print("\t\t line = " + line)
+
+        start = end
+        end += 64
+
+    return lines
+
+# ------------------------------ Pre-defined APIs
+
+@app.route('/channel/<int:number>', methods=['PUT'])
 @app.route('/face/<int:number>', methods=['PUT'])
 @app.route('/visualizer/<int:number>', methods=['PUT'])
 @app.route('/clock/<int:number>', methods=['PUT'])
@@ -416,8 +476,10 @@ def divoom_get_dial_list():
 
 
 if __name__ == '__main__':
+    print("Starting 🪴")
     app.run(
         debug=_helpers.parse_bool_value(os.environ.get('PIXOO_REST_DEBUG', 'false')),
         host=os.environ.get('PIXOO_REST_HOST', '127.0.0.1'),
         port=os.environ.get('PIXOO_REST_PORT', '5100')
     )
+    print("Ran app.run 🪴")
