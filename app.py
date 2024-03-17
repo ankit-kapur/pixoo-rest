@@ -97,11 +97,11 @@ max_chars_per_line = int(screen_width / space_per_char) - 1 # buffer
 def sentence():
     # Make lines.
     print("Splitting into lines.")
-    lines = split_into_lines(request.form.get('sentence'))
-    print("lines = " + str(lines))
+    pages = split_into_lines(request.form.get('sentence'))
+    print("pages = " + str(pages))
     
     # Pages
-    pages = make_pages(lines, max_lines_per_page)
+    # pages = make_pages(lines, max_lines_per_page)
 
     page_number = 0
     for page_of_lines in pages:
@@ -144,44 +144,63 @@ def sentence():
 def split_into_lines(sentence):
     print("whole sentence = " + sentence)
     # init
+    pages = []
     lines = []
     start = 0
     end = 0
 
     # calc
-    words = sentence.split()
+    all_words = sentence.split()
 
     # iteration vars
     word_index = 0
+    page_index = 0
     remaining_pixels_in_line = 64
 
     # greedy approach. 
-    while (word_index < len(words)):
-        current_word = words[word_index]
+    while (word_index < len(all_words)):
+        current_word = all_words[word_index]
+
+        if page_index > 0 and not lines:
+            current_word = "..."
+            word_index -= 1
 
         # Edge-case: Too long a word should get hyphenated onto next line
         if (len(current_word) > max_chars_per_line):
             # TODO ---- implement
             line = "hyphenate it if even 1 word won't fit on this line"
 
-        # keep adding words until the line is full.
-        remaining_chars = max_chars_per_line
+        # Make a line.
+        # Keep adding words until the line is full.
         words_in_line = []
-
+        remaining_chars = max_chars_per_line
         while (remaining_chars > 0 and len(current_word) < remaining_chars):
             words_in_line.append(current_word)
             word_index += 1
             remaining_chars -= len(current_word)
 
-            if (word_index == len(words)):
+            if (word_index == len(all_words)):
                 break
-            current_word = words[word_index]
+            current_word = all_words[word_index]
 
+        # Add to lines.
         if words_in_line:
             lines.append(words_in_line)
             print("\t line = " + str(words_in_line))
 
-    return lines
+        # Make a new page
+        if len(lines) == max_lines_per_page or word_index >= len(all_words):
+            if (word_index < len(all_words)): # More pages remaining 
+                # Ellipsis. Last word of last line.
+                lines[-1][-1] = "..."
+                word_index -= 1
+            
+            print("New page")
+            pages.append(lines)
+            page_index += 1
+            lines = []
+
+    return pages
 
 # Utils
 def make_pages(lines, max_lines_per_page):
